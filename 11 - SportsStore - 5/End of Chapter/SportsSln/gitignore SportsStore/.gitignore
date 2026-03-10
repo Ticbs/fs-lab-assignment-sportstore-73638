@@ -1,0 +1,28 @@
+# User secrets (NEVER commit)
+secrets.json
+appsettings.*.json
+!appsettings.json
+
+# Logs
+logs/
+*.log
+
+# Build outputs
+bin/
+obj/
+dist/
+
+# IDE
+.vs/
+.vscode/
+*.swp
+*.sln.DotSettings.user
+
+# Entity Framework
+*.db
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+.env.local	
