@@ -3,15 +3,12 @@ name: .NET CI
 on:
   push:
     branches: [ main ]
-
   pull_request:
     branches: [ main ]
-
   workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +23,7 @@ jobs:
       run: dotnet restore "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln"
 
     - name: Build
-      run: dotnet build "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --no-restore
+      run: dotnet build "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --no-build --verbosity normal
+      run: dotnet test "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --no-build --verbosity normal
