@@ -26,4 +26,4 @@ jobs:
       run: dotnet build "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --no-build --verbosity normal
+      run: dotnet test "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --verbosity normal
