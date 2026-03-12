@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Payment Success";
+}
+
+<h2>Payment Successful</h2>
+
+<p>Your payment was completed successfully.</p>
+
+@if (ViewBag.SessionId != null)
+{
+    <p><strong>Stripe Session Id:</strong> @ViewBag.SessionId</p>
+}
+
+<a href="/" class="btn btn-primary">Return to store</a>
