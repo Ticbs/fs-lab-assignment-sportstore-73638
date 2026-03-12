@@ -2,28 +2,36 @@ name: .NET CI
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - master
+      - tb-**
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    branches:
+      - main
+      - master
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln"
+      - name: Show .NET info
+        run: dotnet --info
 
-    - name: Build
-      run: dotnet build "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --no-restore
+      - name: Restore dependencies
+        run: dotnet restore "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln"
 
-    - name: Test
-      run: dotnet test "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --verbosity normal
+      - name: Build solution
+        run: dotnet build "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --configuration Release --no-build --verbosity normal
