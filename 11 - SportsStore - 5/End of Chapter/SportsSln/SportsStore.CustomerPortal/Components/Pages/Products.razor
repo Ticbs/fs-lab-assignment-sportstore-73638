@@ -1,0 +1,53 @@
+@page "/products"
+@using SportsStore.CustomerPortal.Services
+@inject OrderApiService ApiService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<h3>Products</h3>
+
+@if (products == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div style="display:flex; flex-wrap:wrap; gap:20px;">
+        @foreach (var product in products)
+        {
+            <div style="border:1px solid #ccc; padding:15px; width:200px; border-radius:8px;">
+                <h5>@product.Name</h5>
+                <p>@product.Category</p>
+                <p><strong>@product.Price.ToString("C")</strong></p>
+                <button @onclick="() => AddToCart(product)">Add to Cart</button>
+            </div>
+        }
+    </div>
+}
+
+@if (message != null)
+{
+    <p style="color:green; margin-top:10px;">@message</p>
+}
+
+@code {
+    private List<ProductDto>? products;
+    private string? message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await ApiService.GetProductsAsync();
+    }
+
+    private void AddToCart(ProductDto product)
+    {
+        CartState.Items.Add(new CartItem
+        {
+            ProductId = product.Id,
+            ProductName = product.Name,
+            Quantity = 1,
+            UnitPrice = product.Price
+        });
+        message = $"{product.Name} added to cart!";
+    }
+}
