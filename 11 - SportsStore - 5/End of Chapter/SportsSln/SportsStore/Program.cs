@@ -7,6 +7,11 @@ using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Serilog
+builder.Host.UseSerilog((ctx, lc) => lc
+    .ReadFrom.Configuration(ctx.Configuration)
+    .Enrich.FromLogContext());
+
 // Database
 builder.Services.AddDbContext<StoreDbContext>(opts =>
 {
@@ -36,14 +41,6 @@ builder.Services.AddScoped<Cart>(sp => SessionCart.GetCart(sp));
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// Serilog
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .CreateLogger();
-
-builder.Host.UseSerilog();
-
 // Stripe
 var stripeKey =
     builder.Configuration["Stripe:SecretKey"] ??
@@ -62,6 +59,8 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
