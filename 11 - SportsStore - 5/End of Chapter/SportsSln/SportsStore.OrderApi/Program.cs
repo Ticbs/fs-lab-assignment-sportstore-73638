@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SportsStore.OrderApi.Data;
 using SportsStore.OrderApi.Services;
+using SportsStore.OrderApi.Handlers;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -32,6 +33,9 @@ try
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     builder.Services.AddSingleton<RabbitMQPublisher>();
+
+    builder.Services.AddMediatR(cfg =>
+        cfg.RegisterServicesFromAssembly(typeof(CheckoutOrderHandler).Assembly));
 
     var app = builder.Build();
 
