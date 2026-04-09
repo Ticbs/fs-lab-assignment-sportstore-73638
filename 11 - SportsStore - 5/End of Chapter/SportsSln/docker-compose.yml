@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  orderapi:
+    build:
+      context: .
+      dockerfile: SportsStore.OrderApi/Dockerfile
+    container_name: orderapi
+    ports:
+      - "5049:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SportsStoreOrders;User Id=sa;Password=Your_password123;TrustServerCertificate=True
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_started
+
+  inventoryservice:
+    build:
+      context: .
+      dockerfile: SportsStore.InventoryService/Dockerfile
+    container_name: inventoryservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  paymentservice:
+    build:
+      context: .
+      dockerfile: SportsStore.PaymentService/Dockerfile
+    container_name: paymentservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  shippingservice:
+    build:
+      context: .
+      dockerfile: SportsStore.ShippingService/Dockerfile
+    container_name: shippingservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "Your_password123"
+      ACCEPT_EULA: "Y"

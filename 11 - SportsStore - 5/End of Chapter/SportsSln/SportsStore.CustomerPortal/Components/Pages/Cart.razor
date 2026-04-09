@@ -1,0 +1,82 @@
+@page "/cart"
+@using SportsStore.CustomerPortal.Services
+@inject OrderApiService ApiService
+@inject NavigationManager Nav
+@rendermode InteractiveServer
+
+<h3>Shopping Cart</h3>
+
+@if (!CartState.Items.Any())
+{
+    <p>Your cart is empty. <a href="/products">Browse products</a></p>
+}
+else
+{
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in CartState.Items)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.UnitPrice.ToString("C")</td>
+                    <td>@((item.Quantity * item.UnitPrice).ToString("C"))</td>
+                    <td><button @onclick="() => RemoveItem(item)">Remove</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Total: @CartState.Items.Sum(i => i.Quantity * i.UnitPrice).ToString("C")</h4>
+
+    <div style="margin-top:10px;">
+        <label>Customer ID:</label>
+        <input @bind="customerId" placeholder="Enter your customer ID" />
+    </div>
+
+    <button @onclick="Checkout" style="margin-top:10px; padding:10px 20px;">
+        Checkout
+    </button>
+
+    @if (message != null)
+    {
+        <p style="color:green; margin-top:10px;">@message</p>
+    }
+}
+
+@code {
+    private string customerId = "customer-1";
+    private string? message;
+
+    private void RemoveItem(CartItem item)
+    {
+        CartState.Items.Remove(item);
+    }
+
+    private async Task Checkout()
+    {
+        if (string.IsNullOrEmpty(customerId)) return;
+
+        var order = await ApiService.CheckoutAsync(customerId, CartState.Items);
+        if (order != null)
+        {
+            CartState.Items.Clear();
+            message = $"Order placed! ID: {order.Id}";
+            await Task.Delay(2000);
+            Nav.NavigateTo("/orders");
+        }
+        else
+        {
+            message = "Checkout failed. Please try again.";
+        }
+    }
+}

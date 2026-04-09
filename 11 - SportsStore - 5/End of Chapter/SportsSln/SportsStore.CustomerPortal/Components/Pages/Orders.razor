@@ -1,0 +1,67 @@
+@page "/orders"
+@using SportsStore.CustomerPortal.Services
+@inject OrderApiService ApiService
+@rendermode InteractiveServer
+
+<h3>My Orders</h3>
+
+<div style="margin-bottom:10px;">
+    <input @bind="customerId" placeholder="Enter your customer ID" />
+    <button @onclick="LoadOrders">Load Orders</button>
+</div>
+
+@if (orders == null)
+{
+    <p>Enter your customer ID to see your orders.</p>
+}
+else if (!orders.Any())
+{
+    <p>No orders found.</p>
+}
+else
+{
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Total</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in orders)
+            {
+                <tr>
+                    <td>@order.Id.ToString()[..8]...</td>
+                    <td>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@order.TotalAmount.ToString("C")</td>
+                    <td>
+                        <span style="padding:3px 8px; border-radius:4px; background:@GetStatusColor(order.Status); color:white;">
+                            @order.Status
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private string customerId = "customer-1";
+    private List<OrderDto>? orders;
+
+    private async Task LoadOrders()
+    {
+        orders = await ApiService.GetOrdersAsync(customerId);
+    }
+
+    private string GetStatusColor(string status) => status switch
+    {
+        "Completed" => "#28a745",
+        "Failed" => "#dc3545",
+        "Submitted" => "#007bff",
+        "PaymentApproved" => "#17a2b8",
+        _ => "#6c757d"
+    };
+}
