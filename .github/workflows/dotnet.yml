@@ -1,0 +1,35 @@
+name: .NET CI
+
+on:
+  push:
+    branches: [ "feature/assignment2-order-api" ]
+  pull_request:
+    branches: [ "feature/assignment2-order-api" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln"
+
+    - name: Build
+      run: dotnet build "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --no-restore
+
+    - name: Test
+      run: dotnet test "11 - SportsStore - 5/End of Chapter/SportsSln/SportsSln.sln" --no-build --verbosity normal --logger trx --results-directory TestResults
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: TestResults
