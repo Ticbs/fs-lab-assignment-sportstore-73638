@@ -17,6 +17,23 @@ services:
       timeout: 5s
       retries: 5
 
+  seq:
+    image: datalust/seq
+    container_name: seq
+    ports:
+      - "5341:80"
+    environment:
+      ACCEPT_EULA: "Y"
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "Your_password123"
+      ACCEPT_EULA: "Y"
+
   orderapi:
     build:
       context: .
@@ -28,6 +45,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=SportsStoreOrders;User Id=sa;Password=Your_password123;TrustServerCertificate=True
       - RabbitMQ__Host=rabbitmq
+      - Seq__ServerUrl=http://seq
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -42,6 +60,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - RabbitMQ__Host=rabbitmq
+      - Seq__ServerUrl=http://seq
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -54,6 +73,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - RabbitMQ__Host=rabbitmq
+      - Seq__ServerUrl=http://seq
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -66,15 +86,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - RabbitMQ__Host=rabbitmq
+      - Seq__ServerUrl=http://seq
     depends_on:
       rabbitmq:
         condition: service_healthy
-
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sqlserver
-    ports:
-      - "1433:1433"
-    environment:
-      SA_PASSWORD: "Your_password123"
-      ACCEPT_EULA: "Y"
