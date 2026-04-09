@@ -3,6 +3,7 @@ using Serilog;
 using SportsStore.OrderApi.Data;
 using SportsStore.OrderApi.Services;
 using SportsStore.OrderApi.Handlers;
+using SportsStore.OrderApi.Mapping;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -36,6 +37,8 @@ try
 
     builder.Services.AddMediatR(cfg =>
         cfg.RegisterServicesFromAssembly(typeof(CheckoutOrderHandler).Assembly));
+
+    builder.Services.AddAutoMapper(typeof(OrderMappingProfile).Assembly);
 
     var app = builder.Build();
 
