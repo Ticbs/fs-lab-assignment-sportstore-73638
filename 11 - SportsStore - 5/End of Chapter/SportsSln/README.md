@@ -1,136 +1,61 @@
 # SportsStore - Distributed Order Processing Platform
-**Student:** Tiago Borges 73638  
-**Module:** Full Stack Development - Assignment 2  
-**Institution:** Dorset College  
 
-## System Architecture
+Student: Tiago Borges | Student ID: 73638
+Module: Full Stack Development - Semester 2, Assignment 2
+Programme: BSc in Computing | Institution: Dorset College
 
-This system is a distributed event-driven order processing platform built with .NET 8, RabbitMQ, Blazor, and React.
+## What is this project?
 
-### Architecture Overview
-## Projects
+This project extends the SportsStore shopping cart application into a distributed order processing system. When a customer places an order, instead of processing everything in one go, the system breaks it down into smaller services that communicate with each other using messages through RabbitMQ.
 
-| Project | Technology | Port | Description |
-|---------|-----------|------|-------------|
-| SportsStore.OrderApi | .NET 8 Web API | 5049 | Central order management API |
-| SportsStore.InventoryService | .NET 8 Worker | - | Validates stock availability |
-| SportsStore.PaymentService | .NET 8 Worker | - | Processes payments |
-| SportsStore.ShippingService | .NET 8 Worker | - | Creates shipments |
-| SportsStore.CustomerPortal | Blazor Server | 5178 | Customer-facing UI |
-| AdminDashboard | React + TypeScript | 3000 | Admin operations UI |
-| SportsStore.Shared | .NET 8 Class Library | - | Shared events and models |
+The idea is to simulate how a real e-commerce platform works behind the scenes - when you buy something online, there are separate systems checking stock, processing your payment, and arranging delivery. That is exactly what this project does.
 
-## Event Flow
+## How the system works
 
-1. Customer checks out via Blazor portal
-2. OrderApi creates order and publishes to RabbitMQ queue: inventory-check
-3. InventoryService consumes event, validates stock, publishes to: payment-process
-4. PaymentService processes payment, publishes to: shipping-create
-5. ShippingService creates shipment with tracking reference
+When a customer checks out, here is what happens step by step:
 
-## Order States
+1. The customer fills their cart in the Blazor Customer Portal and clicks checkout
+2. The Order API receives the order, saves it to the database, and sends a message to RabbitMQ
+3. The Inventory Service picks up the message and checks if the items are in stock
+4. If stock is confirmed, the Payment Service processes the payment
+5. If payment is approved, the Shipping Service creates a shipment with a tracking reference
+6. Throughout this process, the order status is updated at each step
 
-Cart ? Submitted ? InventoryPending ? InventoryConfirmed/Failed ? PaymentPending ? PaymentApproved/Failed ? ShippingPending ? ShippingCreated ? Completed/Failed
+## Projects in this solution
 
-## How to Run
+- SportsStore.OrderApi: The main API - handles orders, talks to the database, and publishes messages to RabbitMQ
+- SportsStore.InventoryService: Listens for new orders and checks if items are in stock
+- SportsStore.PaymentService: Processes payments when inventory is confirmed
+- SportsStore.ShippingService: Creates shipment details when payment goes through
+- SportsStore.CustomerPortal: Blazor web app where customers browse products and place orders
+- AdminDashboard: React app where admins can monitor all orders and spot failures
+- SportsStore.Shared: Shared library containing the message contracts used between services
 
-### Prerequisites
-- .NET 8 SDK
-- Docker Desktop
-- Node.js v20+
+## How to run the project
 
-### Option 1 - Docker Compose (Recommended)
-`ash
-cd "11 - SportsStore - 5/End of Chapter/SportsSln"
-docker-compose up --build
-`
+Prerequisites: .NET 8 SDK, Docker Desktop, Node.js
 
-### Option 2 - Manual
-1. Start RabbitMQ:
-`ash
+Start RabbitMQ:
 docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
-`
 
-2. Start OrderApi:
-`ash
-cd SportsStore.OrderApi
-dotnet run
-`
+Start OrderApi:
+cd SportsStore.OrderApi then dotnet run
 
-3. Start InventoryService:
-`ash
-cd SportsStore.InventoryService
-dotnet run
-`
+Start each service in separate terminals:
+cd SportsStore.InventoryService then dotnet run
+cd SportsStore.PaymentService then dotnet run
+cd SportsStore.ShippingService then dotnet run
 
-4. Start PaymentService:
-`ash
-cd SportsStore.PaymentService
-dotnet run
-`
+Start Customer Portal:
+cd SportsStore.CustomerPortal then dotnet run
 
-5. Start ShippingService:
-`ash
-cd SportsStore.ShippingService
-dotnet run
-`
-
-6. Start Blazor CustomerPortal:
-`ash
-cd SportsStore.CustomerPortal
-dotnet run
-`
-
-7. Start React Admin Dashboard:
-`ash
-cd sportsstore-admin
-npm install
-npm start
-`
-
-## Service Responsibilities
-
-- **OrderApi** - Creates orders, stores in SQL Server, publishes events to RabbitMQ, exposes REST endpoints
-- **InventoryService** - Consumes inventory-check queue, simulates stock validation (90% success rate)
-- **PaymentService** - Consumes payment-process queue, simulates payment (85% success rate)
-- **ShippingService** - Consumes shipping-create queue, generates tracking reference
-- **CustomerPortal** - Browse products, add to cart, checkout, view orders
-- **AdminDashboard** - View all orders, filter by status, identify failed orders
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/orders/checkout | Submit new order |
-| GET | /api/orders | Get all orders |
-| GET | /api/orders/{id} | Get order by ID |
-| GET | /api/orders/{id}/status | Get order status |
-| PATCH | /api/orders/{id}/status | Update order status |
-
-## Technologies Used
-
-- .NET 8 - Backend services
-- RabbitMQ - Message broker
-- Entity Framework Core - ORM
-- SQL Server LocalDB - Database
-- Serilog - Structured logging
-- Blazor Server - Customer portal
-- React + TypeScript - Admin dashboard
-- Docker + Docker Compose - Containerisation
-- Swagger/OpenAPI - API documentation
-
-## Logging
-
-All services use Serilog structured logging with the following sinks:
-- Console output
-- File (daily rolling logs in /logs folder)
-
-Key events logged: order submission, message publishing, message consumption, inventory validation, payment outcome, shipping creation, errors.
+Start Admin Dashboard:
+cd sportsstore-admin then npm install then npm start
 
 ## Assumptions and Limitations
 
-- Inventory validation is simulated with 90% success rate
-- Payment processing is simulated with 85% success rate
-- Products are currently hardcoded in the CustomerPortal
-- SQLite can be used as alternative to SQL Server
+- Inventory validation is simulated with a 90% success rate
+- Payment processing is simulated with an 85% success rate
+- Products are currently hardcoded in the Customer Portal
 - RabbitMQ must be running before starting any service
+- The database is created automatically when the Order API starts for the first time
